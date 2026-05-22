@@ -4,19 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Echoes of the Void - Looping Dungeon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
+        <div id="scanline"></div>
         <div id="ui-layer">
             <div id="start-screen" class="overlay">
-                <h1>Echoes of the Void</h1>
+                <h1>ECHOES</h1>
                 <p>記憶を頼りに、無限の迷宮を抜け出せ</p>
                 <button id="start-button">探索を開始する</button>
             </div>
             <div id="hud" class="hidden">
-                <div id="loop-count">Loop: 0</div>
+                <div id="loop-count">LOOP: 0</div>
             </div>
             <div id="message-log"></div>
         </div>

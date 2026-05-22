@@ -5,6 +5,7 @@ class Game {
         this.canvas.width = CONFIG.CANVAS_WIDTH;
         this.canvas.height = CONFIG.CANVAS_HEIGHT;
 
+        this.map = new Map();
         this.player = new Player(this.canvas.width / 2, this.canvas.height / 2);
         this.isRunning = false;
         this.init();
@@ -42,15 +43,40 @@ class Game {
     }
 
     update(deltaTime) {
+        // Store old position for collision resolution
+        const oldX = this.player.x;
+        const oldY = this.player.y;
+
         this.player.update(deltaTime);
+
+        // Simple collision detection with walls
+        // Check four points around the player circle
+        const r = this.player.radius;
+        const points = [
+            {x: this.player.x - r, y: this.player.y},
+            {x: this.player.x + r, y: this.player.y},
+            {x: this.player.x, y: this.player.y - r},
+            {x: this.player.x, y: this.player.y + r}
+        ];
+
+        for (let p of points) {
+            if (this.map.isWall(p.x, p.y)) {
+                this.player.x = oldX;
+                this.player.y = oldY;
+                break;
+            }
+        }
     }
 
     render() {
-        // 1. Clear with background color (Floor)
-        this.ctx.fillStyle = CONFIG.COLORS.FLOOR;
+        // Clear background
+        this.ctx.fillStyle = CONFIG.COLORS.BG;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // 2. Draw Game World Objects
+        // 1. Draw Map
+        this.map.draw(this.ctx);
+
+        // 2. Draw Player
         this.player.draw(this.ctx);
 
         // 3. Apply Vision Mask (Fog of War)
@@ -59,37 +85,17 @@ class Game {
 
     applyVisionMask() {
         const ctx = this.ctx;
-        
-        // Create a temporary canvas for the mask or just use composite operations
         ctx.save();
         
-        // Fill the entire screen with darkness
-        ctx.fillStyle = CONFIG.COLORS.FOG;
-        
-        // Use a radial gradient for the "light" effect
         const gradient = ctx.createRadialGradient(
             this.player.x, this.player.y, 0,
             this.player.x, this.player.y, CONFIG.VISION_RADIUS
         );
         
-        gradient.addColorStop(0, 'rgba(0, 0, 0, 0)'); // Transparent in center
-        gradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.8)'); // Slight darkness
-        gradient.addColorStop(1, CONFIG.COLORS.FOG); // Total darkness at edge
+        gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        gradient.addColorStop(0.6, 'rgba(0, 0, 0, 0.4)');
+        gradient.addColorStop(1, CONFIG.COLORS.FOG);
 
-        // We want to fill everything EXCEPT the circle with black
-        // One way is to fill the whole screen with the gradient
-        // But the gradient only covers a circle. So we need to fill the rest too.
-        
-        // Better way: 
-        // 1. Create an offscreen canvas for the mask
-        // 2. Fill with black
-        // 3. destination-out a radial gradient
-        
-        // For simplicity in a single canvas:
-        ctx.globalCompositeOperation = 'source-over';
-        
-        // We'll use a path to clip or just draw a large rect with a hole
-        // Actually, the radial gradient starting from transparent to black works well if we fill a large area
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -97,7 +103,6 @@ class Game {
     }
 }
 
-// Start the game when the window loads
 window.onload = () => {
     new Game();
 };
