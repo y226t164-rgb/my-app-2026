@@ -6,7 +6,8 @@ class Game {
         this.canvas.height = CONFIG.CANVAS_HEIGHT;
 
         this.map = new Map();
-        this.player = new Player(this.canvas.width / 2, this.canvas.height / 2);
+        const startPos = this.map.getStartPosition();
+        this.player = new Player(startPos.x, startPos.y);
         this.isRunning = false;
         this.loopCount = 0;
         
@@ -18,6 +19,8 @@ class Game {
         const startScreen = document.getElementById('start-screen');
         const restartButton = document.getElementById('restart-button');
         const deathScreen = document.getElementById('death-screen');
+        const finishButton = document.getElementById('finish-button');
+        const clearScreen = document.getElementById('clear-screen');
         const hud = document.getElementById('hud');
 
         startButton.addEventListener('click', () => {
@@ -31,19 +34,30 @@ class Game {
             this.resetSession();
             this.start();
         });
+
+        finishButton.addEventListener('click', () => {
+            clearScreen.classList.add('hidden');
+            this.map.currentStage = 0;
+            this.map.knownTraps.clear();
+            this.loopCount = 0;
+            document.getElementById('loop-count').textContent = `LOOP: ${this.loopCount}`;
+            this.resetSession();
+            this.start();
+        });
     }
 
     start() {
         this.isRunning = true;
         this.lastTime = performance.now();
-        Utils.Log.save(`探索 ${this.loopCount + 1} 回目...`);
+        Utils.Log.save(`STAGE ${this.map.currentStage + 1} - 探索開始...`);
         requestAnimationFrame((time) => this.gameLoop(time));
     }
 
     resetSession() {
-        this.player.x = this.canvas.width / 2;
-        this.player.y = this.canvas.height / 2;
-        this.map.currentRoomIndex = 0; // Back to start of sequence
+        const startPos = this.map.getStartPosition();
+        this.player.x = startPos.x;
+        this.player.y = startPos.y;
+        this.map.hasMedallion = false;
         this.loopCount++;
         document.getElementById('loop-count').textContent = `LOOP: ${this.loopCount}`;
     }
@@ -68,10 +82,9 @@ class Game {
 
         this.player.update(deltaTime);
 
-        // Check for collision and traps
         const r = this.player.radius;
         const checkPoints = [
-            {x: this.player.x, y: this.player.y}, // Center
+            {x: this.player.x, y: this.player.y},
             {x: this.player.x - r, y: this.player.y},
             {x: this.player.x + r, y: this.player.y},
             {x: this.player.x, y: this.player.y - r},
@@ -87,6 +100,20 @@ class Game {
             } else if (tile === 'T') {
                 this.handleDeath(p.x, p.y);
                 return;
+            } else if (tile === 'M') {
+                if (!this.map.hasMedallion) {
+                    this.map.hasMedallion = true;
+                    Utils.Log.save("メダリオンを手に入れた！ 扉が開く音がした。");
+                }
+            } else if (tile === 'D') {
+                if (this.map.hasMedallion) {
+                    this.handleStageClear();
+                    return;
+                } else {
+                    // Collision with locked door
+                    this.player.x = oldX;
+                    this.player.y = oldY;
+                }
             } else if (tile === 'OUT') {
                 this.handleRoomTransition(p.x, p.y);
                 return;
@@ -103,9 +130,22 @@ class Game {
         document.getElementById('death-screen').classList.remove('hidden');
     }
 
+    handleStageClear() {
+        this.isRunning = false;
+        Utils.Log.save(`STAGE ${this.map.currentStage + 1} クリア！ 次の深淵へ...`);
+        
+        if (this.map.currentStage < this.map.stages.length - 1) {
+            this.map.currentStage++;
+            setTimeout(() => {
+                this.resetSession();
+                this.start();
+            }, 1000);
+        } else {
+            document.getElementById('clear-screen').classList.remove('hidden');
+        }
+    }
+
     handleRoomTransition(x, y) {
-        // Simple loop: if you go out, you loop back or go to next room
-        // For now, let's just loop the current room for simplicity
         if (x < 0) this.player.x = this.canvas.width;
         if (x > this.canvas.width) this.player.x = 0;
         if (y < 0) this.player.y = this.canvas.height;
