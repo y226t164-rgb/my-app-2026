@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echoes of the Void - Looping Dungeon</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui-layer">
+            <div id="start-screen" class="overlay">
+                <h1>Echoes of the Void</h1>
+                <p>記憶を頼りに、無限の迷宮を抜け出せ</p>
+                <button id="start-button">探索を開始する</button>
+            </div>
+            <div id="hud" class="hidden">
+                <div id="loop-count">Loop: 0</div>
+            </div>
+            <div id="message-log"></div>
+        </div>
+    </div>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
