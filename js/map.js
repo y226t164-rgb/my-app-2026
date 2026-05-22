@@ -53,10 +53,28 @@ class Map {
 
         // Replace spaces with dots for consistency in Stage 2/3 definitions
         this.stages = this.stages.map(room => room.map(row => row.replace(/ /g, ".")));
+
+        this.loadProgress();
     }
 
     get grid() {
         return this.stages[this.currentStage];
+    }
+
+    saveProgress() {
+        const data = {
+            currentStage: this.currentStage,
+            knownTraps: Array.from(this.knownTraps)
+        };
+        Utils.Save.save(data);
+    }
+
+    loadProgress() {
+        const data = Utils.Save.load();
+        if (data) {
+            this.currentStage = data.currentStage || 0;
+            this.knownTraps = new Set(data.knownTraps || []);
+        }
     }
 
     draw(ctx) {
@@ -147,6 +165,7 @@ class Map {
 
     revealTrap(r, c) {
         this.knownTraps.add(`${this.currentStage}-${r}-${c}`);
+        this.saveProgress();
     }
 
     checkTile(x, y) {

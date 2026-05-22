@@ -50,6 +50,29 @@ const Utils = {
         clear() {
             localStorage.removeItem(this.STORAGE_KEY);
         }
+    },
+
+    // Persistent Game State (Traps, Stage)
+    Save: {
+        STORAGE_KEY: 'echoes_of_the_void_save',
+
+        save(data) {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+        },
+
+        load() {
+            const stored = localStorage.getItem(this.STORAGE_KEY);
+            try {
+                return stored ? JSON.parse(stored) : null;
+            } catch (e) {
+                console.error("Failed to load save data", e);
+                return null;
+            }
+        },
+
+        clear() {
+            localStorage.removeItem(this.STORAGE_KEY);
+        }
     }
 };
 

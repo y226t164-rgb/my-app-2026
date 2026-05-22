@@ -39,6 +39,7 @@ class Game {
             clearScreen.classList.add('hidden');
             this.map.currentStage = 0;
             this.map.knownTraps.clear();
+            Utils.Save.clear(); // Clear persistent save on full completion
             this.loopCount = 0;
             document.getElementById('loop-count').textContent = `LOOP: ${this.loopCount}`;
             this.resetSession();
@@ -136,6 +137,7 @@ class Game {
         
         if (this.map.currentStage < this.map.stages.length - 1) {
             this.map.currentStage++;
+            this.map.saveProgress(); // Save when stage is cleared
             setTimeout(() => {
                 this.resetSession();
                 this.start();
