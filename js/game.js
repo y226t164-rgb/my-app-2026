@@ -24,6 +24,7 @@ class Game {
     start() {
         this.isRunning = true;
         this.lastTime = performance.now();
+        Utils.Log.save("探索が始まりました...");
         requestAnimationFrame((time) => this.gameLoop(time));
     }
 
