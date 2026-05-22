@@ -8,52 +8,49 @@ class Map {
         this.hasMedallion = false;
         this.isDoorUnlocked = false;
 
-        // Known traps persist across deaths: "stage-row-col"
         this.knownTraps = new Set(); 
 
-        // Room Definitions (W: Wall, .: Floor, T: Trap, S: Start, M: Medallion, D: Door)
+        // Redesigned stages with more corridors (W: Wall, .: Floor, T: Trap, S: Start, M: Medallion, D: Door)
         this.stages = [
-            // Stage 1: Basic Introduction
+            // Stage 1: The L-Path (Introduction to corridors)
             [
                 "WWWWWWWWWWWWWWWWWWWW",
-                "W..................W",
-                "W..S...............W",
-                "W.........T........W",
-                "W..................W",
-                "W......M...........W",
-                "W..................W",
-                "W...............D..W",
+                "WS.................W",
+                "WWWWWWWWWWWWWWWWWW.W",
+                "W................W.W",
+                "W.WWWWWWWWWWWWWW.W.W",
+                "W.W...M........W.W.W",
+                "W.W.WWWWWWWWWWWW.W.W",
+                "W...W............D.W",
                 "WWWWWWWWWWWWWWWWWWWW"
             ],
-            // Stage 2: Tight corridors and more traps
+            // Stage 2: The S-Maze (Claustrophobic navigation)
             [
                 "WWWWWWWWWWWWWWWWWWWW",
-                "W S  W      T      W",
-                "W    W  WWWWWWWW   W",
-                "W T  W  W  M   W   W",
-                "W    W  W      W   W",
-                "W    W  W   WWWW   W",
-                "W       W      T   W",
-                "W   T   WWWWWW   D W",
+                "WS..W....W....W....W",
+                "W.W.W.WW.W.WW.W.WW.W",
+                "W.W.W.W..W.W..W.W..W",
+                "W.W.W.W.WW.W.WW.W.WW",
+                "W.W...W.M..W....W..W",
+                "W.WWWWW.WWWWWWWWW.WW",
+                "W.......T.......D..W",
                 "WWWWWWWWWWWWWWWWWWWW"
             ],
-            // Stage 3: The Gauntlet
+            // Stage 3: The Gauntlet (Complex corridors and traps)
             [
                 "WWWWWWWWWWWWWWWWWWWW",
-                "W   T     T     T  W",
-                "W M WWWWW   WWWWW  W",
-                "W   W   W T W   W  W",
-                "W   W S W   W D W  W",
-                "W   W   W   W   W  W",
-                "W T WWWWW   WWWWW  W",
-                "W   T     T     T  W",
+                "W S.W.......W......W",
+                "W.W.W.WWWWW.W.WWWW.W",
+                "W.W.W.W...W.W.W.M.W.W",
+                "W.W.W.W.D.W.W.W.W.W.W",
+                "W.W.W.W...W.W.W.W.W.W",
+                "W.W.W.WWWWW.W.W...W.W",
+                "W...W...T...W...T...W",
                 "WWWWWWWWWWWWWWWWWWWW"
             ]
         ];
 
-        // Replace spaces with dots for consistency in Stage 2/3 definitions
         this.stages = this.stages.map(room => room.map(row => row.replace(/ /g, ".")));
-
         this.loadProgress();
     }
 
@@ -105,8 +102,25 @@ class Map {
         const s = this.tileSize;
         ctx.fillStyle = CONFIG.COLORS.WALL;
         ctx.fillRect(x, y, s, s);
+
         ctx.strokeStyle = CONFIG.COLORS.WALL_LIGHT;
-        ctx.strokeRect(x+1, y+1, s-2, s-2);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, y + s);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x + s, y);
+        ctx.stroke();
+
+        ctx.strokeStyle = CONFIG.COLORS.WALL_DARK;
+        ctx.beginPath();
+        ctx.moveTo(x + s, y);
+        ctx.lineTo(x + s, y + s);
+        ctx.lineTo(x, y + s);
+        ctx.stroke();
+
+        ctx.fillStyle = '#111';
+        ctx.fillRect(x, y, 2, 2);
+        ctx.fillRect(x+s-2, y+s-2, 2, 2);
     }
 
     drawFloor(ctx, x, y) {
@@ -114,21 +128,21 @@ class Map {
         ctx.fillRect(x, y, this.tileSize, this.tileSize);
         
         ctx.fillStyle = CONFIG.COLORS.FLOOR_STONE;
-        ctx.fillRect(x + 4, y + 4, 10, 10);
-        ctx.fillRect(x + 18, y + 18, 10, 10);
+        ctx.fillRect(x + 2, y + 2, 6, 6);
+        ctx.fillRect(x + 22, y + 22, 6, 6);
     }
 
     drawTrap(ctx, x, y) {
         const s = this.tileSize;
-        ctx.fillStyle = 'rgba(229, 57, 53, 0.6)';
+        ctx.fillStyle = 'rgba(229, 57, 53, 0.4)';
         ctx.beginPath();
-        ctx.arc(x + s/2, y + s/2, s/3, 0, Math.PI * 2);
+        ctx.arc(x + s/2, y + s/2, s/4, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = '#ff5252';
         ctx.beginPath();
-        ctx.moveTo(x + s/2, y + s/4);
-        ctx.lineTo(x + s/4, y + 3*s/4);
-        ctx.lineTo(x + 3*s/4, y + 3*s/4);
+        ctx.moveTo(x + s/2, y + s/3);
+        ctx.lineTo(x + s/3, y + 2*s/3);
+        ctx.lineTo(x + 2*s/3, y + 2*s/3);
         ctx.fill();
     }
 
